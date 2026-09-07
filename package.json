@@ -2,8 +2,16 @@
   "name": "food-expiry-alert-system",
   "private": true,
   "scripts": {
-    "install:all": "npm install --prefix backend && npm install --prefix frontend",
-    "test": "npm test --prefix backend",
+    "setup:python": "py -3.14 -m venv .venv && .venv\\Scripts\\python.exe -m pip install -r backend/requirements.txt",
+    "install:all": "npm run setup:python && npm install --prefix frontend",
+    "dev": "npm run dev:infra && npm run dev:services",
+    "dev:infra": "npm run setup:python && docker compose up -d postgres redis && cross-env DATABASE_URL=postgres://food:food@localhost:5434/food .venv\\Scripts\\python.exe backend/migrate.py",
+    "dev:services": "echo Local app: http://localhost:5173/ && concurrently --kill-others-on-fail --names API,WORKER,WEB \"cross-env DATABASE_URL=postgres://food:food@localhost:5434/food REDIS_URL=redis://localhost:6379 NODE_ENV=development .venv\\Scripts\\python.exe -m uvicorn app:app --app-dir backend --host 0.0.0.0 --port 4000 --reload\" \"cross-env DATABASE_URL=postgres://food:food@localhost:5434/food REDIS_URL=redis://localhost:6379 NODE_ENV=development .venv\\Scripts\\python.exe backend/worker.py\" \"npm run dev --prefix frontend -- --host localhost\"",
+    "test": ".venv\\Scripts\\python.exe -m pytest backend/test_date_parser.py",
     "build": "npm run build --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3"
   }
 }
