@@ -1,7 +1,7 @@
-FROM node:22-alpine
+FROM python:3.13-slim
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 EXPOSE 4000
-CMD ["node","src/server.js"]
+CMD ["sh", "-c", "python migrate.py && uvicorn app:app --host 0.0.0.0 --port 4000"]
