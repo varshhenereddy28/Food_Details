@@ -9,7 +9,7 @@ import jwt
 import psycopg
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from redis import Redis
@@ -111,5 +111,5 @@ def delete_product(product_id: str, user: dict = Depends(current_user)):
     db_query("DELETE FROM products WHERE id=%s AND user_id=%s", (product_id, user["sub"]))
 
 @app.post("/ocr/parse")
-async def parse_ocr(ocrText: str = "", image: UploadFile | None = File(default=None), user: dict = Depends(current_user)):
+async def parse_ocr(ocrText: str = Form(default=""), image: UploadFile | None = File(default=None), user: dict = Depends(current_user)):
     return {**extract_dates(ocrText), "imageAttached": image is not None, "requiresConfirmation": True}
